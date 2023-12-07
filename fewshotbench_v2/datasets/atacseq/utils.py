@@ -7,6 +7,7 @@ import numpy as np
 
 class AtacData():
     def __init__(self, src_file = "data/atacseq/matrix.h5ad", life_stage = "Adult", pre_processing=True, feature_class=None) -> None:
+
         """
         Args:
             src_file: h5ad file 
@@ -18,6 +19,7 @@ class AtacData():
         
         pp_out_path = "data/atacseq/processed_{}_matrix.h5ad".format(life_stage)
         if os.path.exists(pp_out_path) and pre_processing:
+            print("Loading the pre-processed data from memory")
             self.adata = sc.read_h5ad(pp_out_path)
         else:
             # # Check for valid life_stage
@@ -29,13 +31,18 @@ class AtacData():
                 raise ValueError("Feature class must be None, 'Promoter', 'Promoter Proximal', or 'Distal'")
 
             print("Preparing data...")
-            self.instantiate_file(src_file)
+            self.set_up_file(src_file)
+            print("Loading the data from memory")
+
             self.adata = sc.read_h5ad(src_file, backed="r") # data do not load to memory 
-            # Add metadata information 
+            print("Adding metadata information")
             self.adata = self.add_cell_metadata(self.adata)
             self.adata = self.add_CRE_metadata(self.adata)
 
-            # Select Adult or Fetal cells
+
+            # Select Adult or Fetal cells 
+            print("Selecting {} cells".format(life_stage))
+
             self.life_stage = life_stage
             if self.life_stage is not None:
                 self.adata = self.adata[self.adata.obs["Life stage"] == self.life_stage]
@@ -51,10 +58,12 @@ class AtacData():
         
             # Pre-processing 
             if pre_processing:
+                print("Pre-processing the data")
                 self.adata = self.pre_process(self.adata)
 
-            
-
+        self.add_labels()
+        print("Dataclass is ready!")
+        
     def add_cell_metadata(self, adata, src_file = "data/atacseq/Cell_metadata.tsv.gz"):
         """
         Args:
@@ -124,10 +133,16 @@ class AtacData():
 
         return bdata
     
-    def instantiate_file(self, src_file):
+    def add_labels(self):
+        """
+        Add labels to the adata.obs
+        """
+        # Add labels to the adata.obs
+        self.adata.obs["label"] = self.adata.obs['cell type'].astype('category').cat.codes
+
+    def set_up_file(self, src_file):
         server = "http://catlas.org/catlas_downloads/humantissues/"
         link = server + "/".join(src_file.split("/")[1:])
-
         if not os.path.exists(src_file):
             os.makedirs("/".join(src_file.split("/")[:-1]), exist_ok=True)
             with open(src_file, "wb") as f:
@@ -146,6 +161,8 @@ class AtacData():
                         done = int(50 * dl / total_length)
                         sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50-done)) )    
                         sys.stdout.flush()
+        else:
+            print("File exists: %s (no need to download)" % src_file)
 
 
 
