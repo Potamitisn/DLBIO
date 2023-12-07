@@ -6,12 +6,15 @@ import numpy as np
 
 
 class AtacData():
-    def __init__(self, src_file = "data/atacseq/matrix.h5ad", life_stage = "Adult", pre_processing=True) -> None:
+    def __init__(self, src_file = "data/atacseq/matrix.h5ad", life_stage = "Adult", pre_processing=True, feature_class=None) -> None:
+
         """
         Args:
-            src_file: h5ad file ##TODO: download from the website directly?
-            life_stage: choose between 'Adult' or 'Fetal'
-            pre_processing: True or False; if filter unimportant cis-regulatory elements and low-quality cells 
+            src_file: h5ad file 
+            life_stage: choose between 'Adult' or 'Fetal'. default: Adult.
+            pre_processing: True or False; if filter unimportant cis-regulatory elements and low-quality cells. default: True
+            feature_class: Select between None, "Promoter", "Promoter Proximal" and "Distal". default: None.
+                Promoter (-200 to +200 of TSS), Promoter Proximal (less) or Distal
         """
         
         pp_out_path = "data/atacseq/processed_{}_matrix.h5ad".format(life_stage)
@@ -19,15 +22,27 @@ class AtacData():
             print("Loading the pre-processed data from memory")
             self.adata = sc.read_h5ad(pp_out_path)
         else:
-            self.set_up__(src_file)
+            # # Check for valid life_stage
+            if life_stage not in ["Adult", "Fetal"]:
+                raise ValueError("Life stage must be 'Adult' or 'Fetal'")
+            # # Check for valid feature_class
+            valid_feature_classes = [None, "Promoter", "Promoter Proximal", "Distal"]
+            if feature_class not in valid_feature_classes:
+                raise ValueError("Feature class must be None, 'Promoter', 'Promoter Proximal', or 'Distal'")
+
+            print("Preparing data...")
+            self.set_up_file(src_file)
             print("Loading the data from memory")
+
             self.adata = sc.read_h5ad(src_file, backed="r") # data do not load to memory 
             print("Adding metadata information")
             self.adata = self.add_cell_metadata(self.adata)
             self.adata = self.add_CRE_metadata(self.adata)
 
+
             # Select Adult or Fetal cells 
             print("Selecting {} cells".format(life_stage))
+
             self.life_stage = life_stage
             if self.life_stage is not None:
                 self.adata = self.adata[self.adata.obs["Life stage"] == self.life_stage]
@@ -35,18 +50,20 @@ class AtacData():
                     self.adata = self.adata.to_memory()[:,self.adata.var["Present in adult tissues"] == "yes"]
                 elif self.life_stage == "Fetal":
                     self.adata = self.adata.to_memory()[:,self.adata.var["Present in fetal tissues"] == "yes"]
-                else:
-                    raise ValueError("Life stage can only be 'Adult' or 'Fetal'")
 
-            
+            # Select CRE (feature) class
+            self.feature_class = feature_class
+            if self.feature_class is not None:
+                self.adata = self.adata.to_memory()[:,self.adata.var["Class"] == self.feature_class]
+        
             # Pre-processing 
             if pre_processing:
                 print("Pre-processing the data")
                 self.adata = self.pre_process(self.adata)
+
         self.add_labels()
         print("Dataclass is ready!")
         
-
     def add_cell_metadata(self, adata, src_file = "data/atacseq/Cell_metadata.tsv.gz"):
         """
         Args:
@@ -123,7 +140,7 @@ class AtacData():
         # Add labels to the adata.obs
         self.adata.obs["label"] = self.adata.obs['cell type'].astype('category').cat.codes
 
-    def set_up__(self, src_file):
+    def set_up_file(self, src_file):
         server = "http://catlas.org/catlas_downloads/humantissues/"
         link = server + "/".join(src_file.split("/")[1:])
         if not os.path.exists(src_file):
