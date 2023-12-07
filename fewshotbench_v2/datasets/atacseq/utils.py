@@ -133,12 +133,6 @@ class AtacData():
                         done = int(50 * dl / total_length)
                         sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50-done)) )    
                         sys.stdout.flush()
-            if src_file.endswith(".gz"):
-                with gzip.open(src_file, 'rb') as gz_file:
-                    extracted_data = gz_file.read()
-
-                with open(src_file[:-3], 'w ') as text_file:
-                    text_file.write(extracted_data)
 
 
 

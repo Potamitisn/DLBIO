@@ -8,22 +8,23 @@ from datasets.atacseq.utils import AtacData
 
 
 
-class TMDataset(FewShotDataset, ABC):
-    _dataset_name = 'tabula_muris'
-    _dataset_url = 'http://snap.stanford.edu/comet/data/tabula-muris-comet.zip'
+class ASDataset(FewShotDataset, ABC):
+    _dataset_name = 'atacseq'
 
-    def load_tabular_muris(self, mode='train', min_samples=20):
-        # :10 / 111
-        train_tissues = ['Cilliated Cell', 'Type II Skeletal Myocyte', 'Small Intestinal Enterocyte', 'Microglia', 'Oligodendrocyte Precursor', 'Naive T cell', 'GABAergic Neuron 1', 'Gastric Neuroendocrine Cell', 'Smooth Muscle (Esophageal Muscularis) 1', 'Alveolar Capillary Endothelial Cell']
-        # 10:15 / 111
-        val_tissues = ['Mammary Luminal Epithelial Cell 1', 'Endothelial (Exocrine Tissues)', 'Cortical Epithelial-like', 'Chief Cell', 'Astrocyte 2']
-        # 15:20 / 111
-        test_tissues = ['Macrophage (General)', 'Myoepithelial (Skin)', 'Fibroblast (Epithelial)', 'Smooth Muscle (Esophageal Muscularis) 2', 'Pancreatic Delta,Gamma cell']
+    def load_atac_seq(self, mode='train', min_samples=20):
+        adata = AtacData().adata
+        train_tissues = []
+        test_tissues = ["pancreas", "adrenal_gland", "thyroid", "islet", "ovary"]
+        val_tissues = ["heart_atrial_appendage","heart_la","heart_lv","heart_ra","heart_rv"]
+
+        for tissue_type in adata.obs["tissue"].unique():
+            if tissue_type not in val_tissues+test_tissues :
+                train_tissues.append(tissue_type)
 
         split = {'train': train_tissues,
                  'val': val_tissues,
                  'test': test_tissues}
-        adata = AtacData().adata
+        
         tissues = split[mode]
         # subset data based on target tissues
         adata = adata[adata.obs['tissue'].isin(tissues)]
@@ -42,10 +43,10 @@ class TMDataset(FewShotDataset, ABC):
         return samples, targets
 
 
-class TMSimpleDataset(TMDataset):
+class TMSimpleDataset(ASDataset):
     def __init__(self, batch_size, root='./data/', mode='train', min_samples=20):
         self.initialize_data_dir(root, download_flag=True)
-        self.samples, self.targets = self.load_tabular_muris(mode, min_samples)
+        self.samples, self.targets = self.load_atac_seq(mode, min_samples)
         self.batch_size = batch_size
         super().__init__()
 
@@ -66,7 +67,7 @@ class TMSimpleDataset(TMDataset):
         return data_loader
 
 
-class TMSetDataset(TMDataset):
+class TMSetDataset(ASDataset):
 
     def __init__(self, n_way, n_support, n_query, n_episode=100, root='./data', mode='train'):
         self.initialize_data_dir(root, download_flag=True)
@@ -75,7 +76,7 @@ class TMSetDataset(TMDataset):
         self.n_episode = n_episode
         min_samples = n_support + n_query
 
-        samples_all, targets_all = self.load_tabular_muris(mode, min_samples)
+        samples_all, targets_all = self.load_atac_seq(mode, min_samples)
         self.categories = np.unique(targets_all)  # Unique cell labels
         self.x_dim = samples_all.shape[1]
 
