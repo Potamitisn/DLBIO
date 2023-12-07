@@ -6,10 +6,10 @@ defaults:
 dataset:
   name: tabula_muris
   simple_cls:
-    _target_: datasets.cell.atacseq.ASSimpleDataset
+    _target_: datasets.atacseq.atacseq.AtSSimpleDataset
 
   set_cls:
-    _target_: datasets.cell.atacseq.ASSetDataset
+    _target_: datasets.atacseq.atacseq.AtSSetDataset
 
 backbone:
   _target_: backbones.fcnet.FCNet

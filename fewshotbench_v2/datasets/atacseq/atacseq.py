@@ -8,8 +8,9 @@ from datasets.atacseq.utils import AtacData
 
 
 
-class ASDataset(FewShotDataset, ABC):
+class AtSDataset(FewShotDataset, ABC):
     _dataset_name = 'atacseq'
+    _dataset_url = "http://catlas.org/catlas_downloads/humantissues/"
 
     def load_atac_seq(self, mode='train', min_samples=20):
         adata = AtacData().adata
@@ -27,25 +28,30 @@ class ASDataset(FewShotDataset, ABC):
         
         tissues = split[mode]
         # subset data based on target tissues
+        print("Subset data based on type of tissues")
         adata = adata[adata.obs['tissue'].isin(tissues)]
 
+        print("Subset data based on number of samples")
         filtered_index = adata.obs.groupby(["label"]) \
             .filter(lambda group: len(group) >= min_samples) \
-            .reset_index()['index']
+            .reset_index()['barcodes']
         adata = adata[filtered_index]
 
         # convert gene to torch tensor x
+        print("Convert gene to torch tensor")
         samples = adata.to_df().to_numpy(dtype=np.float32)
         # convert label to torch tensor y
-        targets = adata.obs['label'].cat.codes.to_numpy(dtype=np.int32)
+        print("Convert label to torch tensor")
+        targets = adata.obs['label'].to_numpy(dtype=np.int32)
         # go2gene = get_go2gene(adata=adata, GO_min_genes=32, GO_max_genes=None, GO_min_level=6, GO_max_level=1)
         # go_mask = create_go_mask(adata, go2gene)
+        print("Loading data done :)")
         return samples, targets
 
 
-class TMSimpleDataset(ASDataset):
+class AtSSimpleDataset(AtSDataset):
     def __init__(self, batch_size, root='./data/', mode='train', min_samples=20):
-        self.initialize_data_dir(root, download_flag=True)
+        self.initialize_data_dir(root, download_flag=False)
         self.samples, self.targets = self.load_atac_seq(mode, min_samples)
         self.batch_size = batch_size
         super().__init__()
@@ -67,10 +73,10 @@ class TMSimpleDataset(ASDataset):
         return data_loader
 
 
-class TMSetDataset(ASDataset):
+class AtSSetDataset(AtSDataset):
 
     def __init__(self, n_way, n_support, n_query, n_episode=100, root='./data', mode='train'):
-        self.initialize_data_dir(root, download_flag=True)
+        self.initialize_data_dir(root, download_flag=False)
 
         self.n_way = n_way
         self.n_episode = n_episode
