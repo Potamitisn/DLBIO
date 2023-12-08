@@ -22,7 +22,7 @@ class AtacData():
         #assert os.path.exists(pp_out_path)
         if os.path.exists(pp_out_path) and pre_processing:
             print("Loading the pre-processed data from memory")
-            self.adata = sc.read_h5ad(pp_out_path, backed = 'r')
+            self.adata = sc.read_h5ad(pp_out_path)
         else:
             # # Check for valid life_stage
             if life_stage not in ["Adult", "Fetal"]:

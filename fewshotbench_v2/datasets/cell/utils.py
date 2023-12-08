@@ -11,6 +11,7 @@ class MacaData():
         """
         annotation type: cell_ontology_class, cell_ontology id or free_annotation
         """
+        print("===load TM data===")
         self.adata = read_h5ad(src_file)
         self.adata.obs[annotation_type] = self.adata.obs[annotation_type].astype(str)
         self.adata = self.adata[self.adata.obs[annotation_type] != 'nan', :]
@@ -23,6 +24,7 @@ class MacaData():
         if filter_genes:
             sc.pp.filter_genes(self.adata, min_cells=5)
 
+        print("===pre-process TM data===")
         self.adata = self.preprocess_data(self.adata)
 
     def preprocess_data(self, adata):
