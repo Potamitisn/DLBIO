@@ -22,7 +22,7 @@ class AtacData():
         #assert os.path.exists(pp_out_path)
         if os.path.exists(pp_out_path) and pre_processing:
             print("Loading the pre-processed data from memory")
-            self.adata = sc.read_h5ad(pp_out_path)
+            self.adata = sc.read_h5ad(pp_out_path, backed = 'r')
         else:
             # # Check for valid life_stage
             if life_stage not in ["Adult", "Fetal"]:
@@ -62,6 +62,9 @@ class AtacData():
             if pre_processing:
                 print("Pre-processing the data")
                 self.adata = self.pre_process(self.adata)
+
+            # Save it
+            self.adata.write_h5ad("data/atacseq/processed_{}_matrix.h5ad".format(life_stage).lower()) 
 
         self.add_labels()
         print("Dataclass is ready!")
