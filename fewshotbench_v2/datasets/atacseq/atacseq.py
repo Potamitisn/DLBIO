@@ -26,6 +26,8 @@ class AtSDataset(FewShotDataset, ABC):
                  'val': val_tissues,
                  'test': test_tissues}
         
+        ## get an indicator of what data/mode is being processed
+        print("===== Current data mode is:", mode, "=======")
         tissues = split[mode]
         # subset data based on target tissues
         print("Subset data based on type of tissues")
@@ -43,9 +45,8 @@ class AtSDataset(FewShotDataset, ABC):
         # convert label to torch tensor y
         print("Convert label to torch tensor")
         targets = adata.obs['label'].to_numpy(dtype=np.int32)
-        # go2gene = get_go2gene(adata=adata, GO_min_genes=32, GO_max_genes=None, GO_min_level=6, GO_max_level=1)
-        # go_mask = create_go_mask(adata, go2gene)
-        print("Loading data done :)")
+        
+        print("====== Loading", mode, "data done :)")
         return samples, targets
 
 
