@@ -7,5 +7,5 @@ fewshotbench_v2/__pycache__/
 fewshotbench_v2/*/__pycache__/
 fewshotbench_v2/*/*/__pycache__/
 fewshotbench_v2/outputs/
-fewshotbench_v2/checkponts/
+fewshotbench_v2/checkpoints/
 fewshotbench_v2/wandb/
