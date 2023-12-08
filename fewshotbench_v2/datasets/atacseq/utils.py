@@ -17,7 +17,9 @@ class AtacData():
                 Promoter (-200 to +200 of TSS), Promoter Proximal (less) or Distal
         """
         
-        pp_out_path = "data/atacseq/processed_{}_matrix.h5ad".format(life_stage)
+        pp_out_path = "data/atacseq/processed_{}_matrix.h5ad".format(life_stage).lower()
+        #print(pp_out_path)
+        #assert os.path.exists(pp_out_path)
         if os.path.exists(pp_out_path) and pre_processing:
             print("Loading the pre-processed data from memory")
             self.adata = sc.read_h5ad(pp_out_path)
