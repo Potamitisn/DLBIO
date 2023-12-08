@@ -28,8 +28,8 @@ checkpoint:
   time: latest
 
 wandb:
-  project: "my project"
-  entity: "my entity"
-  mode: "offline" # Can set to offline, disabled
+  project: "DLBIO-Runs"
+  entity: "epfl_wandb"
+  mode: "online" # Can set to offline, disabled
 
 iter_num: 600
