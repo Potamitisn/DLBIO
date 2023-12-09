@@ -10,14 +10,21 @@ from datasets.atacseq.utils import AtacData
 
 class AtSDataset(FewShotDataset, ABC):
     _dataset_name = 'atacseq'
-    _dataset_url = "http://catlas.org/catlas_downloads/humantissues/"
+    #_dataset_url = "http://catlas.org/catlas_downloads/humantissues/"
+    _dataset_url = "https://drive.google.com/uc?export=download&id=1MCCpTq1Xi6uQ-oHgVhOsPAZi9y5zdeZH"
 
     def load_atac_seq(self, mode='train', min_samples=20):
-        adata = AtacData().adata
+        dclass = AtacData()
+        adata = dclass.adata
+        
+        if dclass.life_stage == "Adult":
+            test_tissues = ["pancreas", "adrenal_gland", "thyroid", "islet", "ovary"]
+            val_tissues = ["heart_atrial_appendage","heart_la","heart_lv","heart_ra","heart_rv"]
+        elif dclass.life_stage == "Fetal":
+            test_tissues = ["cerebrum", "cerebellum", "standard"]
+            val_tissues = ["eye", "intestine", "thymus"]
+        
         train_tissues = []
-        test_tissues = ["pancreas", "adrenal_gland", "thyroid", "islet", "ovary"]
-        val_tissues = ["heart_atrial_appendage","heart_la","heart_lv","heart_ra","heart_rv"]
-
         for tissue_type in adata.obs["tissue"].unique():
             if tissue_type not in val_tissues+test_tissues :
                 train_tissues.append(tissue_type)
@@ -26,6 +33,8 @@ class AtSDataset(FewShotDataset, ABC):
                  'val': val_tissues,
                  'test': test_tissues}
         
+        ## get an indicator of what data/mode is being processed
+        print("===== Current data mode is:", mode, "=======")
         tissues = split[mode]
         # subset data based on target tissues
         print("Subset data based on type of tissues")
@@ -43,9 +52,8 @@ class AtSDataset(FewShotDataset, ABC):
         # convert label to torch tensor y
         print("Convert label to torch tensor")
         targets = adata.obs['label'].to_numpy(dtype=np.int32)
-        # go2gene = get_go2gene(adata=adata, GO_min_genes=32, GO_max_genes=None, GO_min_level=6, GO_max_level=1)
-        # go_mask = create_go_mask(adata, go2gene)
-        print("Loading data done :)")
+        
+        print("====== Loading", mode, "data done :)")
         return samples, targets
 
 
