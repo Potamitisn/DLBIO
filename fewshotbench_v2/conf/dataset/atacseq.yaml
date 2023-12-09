@@ -4,7 +4,7 @@ defaults:
   - classification_base
 
 dataset:
-  name: tabula_muris
+  name: atacseq
   simple_cls:
     _target_: datasets.atacseq.atacseq.AtSSimpleDataset
 
