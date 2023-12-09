@@ -6,7 +6,7 @@ import numpy as np
 
 
 class AtacData():
-    def __init__(self, src_file = "data/atacseq/matrix.h5ad", life_stage = "Adult", pre_processing=True, feature_class=None) -> None:
+    def __init__(self, src_file = "data/atacseq/matrix.h5ad", life_stage = "Adult", pre_processing=True, feature_class=None, subset_fraction=None) -> None:
 
         """
         Args:
@@ -17,7 +17,7 @@ class AtacData():
                 Promoter (-200 to +200 of TSS), Promoter Proximal (less) or Distal
         """
         
-        pp_out_path = "data/atacseq/processed_{}_matrix.h5ad".format(life_stage)
+        pp_out_path = "data/atacseq/processed_{}_matrix_subset.h5ad".format(life_stage)
         if os.path.exists(pp_out_path) and pre_processing:
             print("Loading the pre-processed data from memory")
             self.adata = sc.read_h5ad(pp_out_path)
@@ -62,6 +62,11 @@ class AtacData():
                 self.adata = self.pre_process(self.adata)
 
         self.add_labels()
+        if subset_fraction:
+            print("Subsetting the data to {:.1f}%".format(subset_fraction*100))
+            subset_index = self.adata.obs.groupby("cell type", group_keys=False).apply(lambda x : self.sample_fraction(x, subset_fraction)).index
+            self.add_labels()
+            self.adata = self.adata[subset_index]
         print("Dataclass is ready!")
         
     def add_cell_metadata(self, adata, src_file = "data/atacseq/Cell_metadata.tsv.gz"):
@@ -163,6 +168,9 @@ class AtacData():
                         sys.stdout.flush()
         else:
             print("File exists: %s (no need to download)" % src_file)
+
+    def sample_fraction(self, group, fraction):
+        return group.sample(frac=fraction)
 
 
 
