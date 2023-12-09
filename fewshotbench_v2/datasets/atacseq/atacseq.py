@@ -14,11 +14,17 @@ class AtSDataset(FewShotDataset, ABC):
     _dataset_url = "https://drive.google.com/uc?export=download&id=1MCCpTq1Xi6uQ-oHgVhOsPAZi9y5zdeZH"
 
     def load_atac_seq(self, mode='train', min_samples=20):
-        adata = AtacData().adata
+        dclass = AtacData()
+        adata = dclass.adata
+        
+        if dclass.life_stage == "Adult":
+            test_tissues = ["pancreas", "adrenal_gland", "thyroid", "islet", "ovary"]
+            val_tissues = ["heart_atrial_appendage","heart_la","heart_lv","heart_ra","heart_rv"]
+        elif dclass.life_stage == "Fetal":
+            test_tissues = ["cerebrum", "cerebellum", "standard"]
+            val_tissues = ["eye", "intestine", "thymus"]
+        
         train_tissues = []
-        test_tissues = ["pancreas", "adrenal_gland", "thyroid", "islet", "ovary"]
-        val_tissues = ["heart_atrial_appendage","heart_la","heart_lv","heart_ra","heart_rv"]
-
         for tissue_type in adata.obs["tissue"].unique():
             if tissue_type not in val_tissues+test_tissues :
                 train_tissues.append(tissue_type)

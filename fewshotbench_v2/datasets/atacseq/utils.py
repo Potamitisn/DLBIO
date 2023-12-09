@@ -3,10 +3,12 @@ import os, requests, sys, gzip
 import scanpy as sc
 import pandas as pd
 import numpy as np
+import warnings
+warnings.filterwarnings('ignore')
 
 
 class AtacData():
-    def __init__(self, src_file = "data/atacseq/matrix.h5ad", life_stage = "Adult", pre_processing=True, feature_class=None) -> None:
+    def __init__(self, src_file = "data/atacseq/matrix.h5ad", life_stage = "Adult", pre_processing=True, feature_class=None, subset_fraction=None) -> None:
 
         """
         Args:
@@ -15,37 +17,55 @@ class AtacData():
             pre_processing: True or False; if filter unimportant cis-regulatory elements and low-quality cells. default: True
             feature_class: Select between None, "Promoter", "Promoter Proximal" and "Distal". default: None.
                 Promoter (-200 to +200 of TSS), Promoter Proximal (less) or Distal
+            subset_fraction: float (0 - 1), fraction to subset the data. default: None
         """
-        
-        pp_out_path = "data/atacseq/processed_{}_matrix.h5ad".format(life_stage).lower()
-        #print(pp_out_path)
+        ##### Check input args #####
+        # Check for valid life_stage
+        if life_stage not in ["Adult", "Fetal"]:
+            raise ValueError("Life stage must be 'Adult' or 'Fetal'")
+        # Check for valid feature_class
+        valid_feature_classes = [None, "Promoter", "Promoter Proximal", "Distal"]
+        if feature_class not in valid_feature_classes:
+            raise ValueError("Feature class must be None, 'Promoter', 'Promoter Proximal', or 'Distal'")
+        # Check for valid subset_fraction
+        if subset_fraction is not None and not (0 <= subset_fraction <= 1):
+            raise ValueError("Subset fraction must be a value between 0 and 1, or None")
+    
+        self.life_stage = life_stage
+        self.feature_class = feature_class
+        self.subset_fraction = subset_fraction
+
+
+        ##### Data path #####
+        # Initialize the base path
+        pp_out_path = "data/atacseq/processed_{}".format(life_stage.lower())
+
+        # Conditionally add feature_class and subset_fraction
+        if feature_class is not None:
+            pp_out_path += "_{}".format(feature_class.replace(" ", "_").lower())
+        if subset_fraction is not None:
+            pp_out_path += "_{:.0f}fraction".format(subset_fraction*100)
+        # Append the file extension
+        pp_out_path += "_matrix.h5ad"
+        print("Processed data will be saved to {}".format(pp_out_path))
         #assert os.path.exists(pp_out_path)
+
+        ##### Check if processed data exits, or proces it #####
         if os.path.exists(pp_out_path) and pre_processing:
             print("Loading the pre-processed data from memory")
             self.adata = sc.read_h5ad(pp_out_path)
         else:
-            # # Check for valid life_stage
-            if life_stage not in ["Adult", "Fetal"]:
-                raise ValueError("Life stage must be 'Adult' or 'Fetal'")
-            # # Check for valid feature_class
-            valid_feature_classes = [None, "Promoter", "Promoter Proximal", "Distal"]
-            if feature_class not in valid_feature_classes:
-                raise ValueError("Feature class must be None, 'Promoter', 'Promoter Proximal', or 'Distal'")
-
             print("Preparing data...")
             self.set_up_file(src_file)
             print("Loading the data from memory")
-
             self.adata = sc.read_h5ad(src_file, backed="r") # data do not load to memory 
+
             print("Adding metadata information")
             self.adata = self.add_cell_metadata(self.adata)
             self.adata = self.add_CRE_metadata(self.adata)
 
-
             # Select Adult or Fetal cells 
             print("Selecting {} cells".format(life_stage))
-
-            self.life_stage = life_stage
             if self.life_stage is not None:
                 self.adata = self.adata[self.adata.obs["Life stage"] == self.life_stage]
                 if self.life_stage == "Adult":
@@ -54,8 +74,8 @@ class AtacData():
                     self.adata = self.adata.to_memory()[:,self.adata.var["Present in fetal tissues"] == "yes"]
 
             # Select CRE (feature) class
-            self.feature_class = feature_class
             if self.feature_class is not None:
+                print("Selecting feature class {}".format(feature_class))
                 self.adata = self.adata.to_memory()[:,self.adata.var["Class"] == self.feature_class]
         
             # Pre-processing 
@@ -64,9 +84,18 @@ class AtacData():
                 self.adata = self.pre_process(self.adata)
 
             # Save it
-            self.adata.write_h5ad("data/atacseq/processed_{}_matrix.h5ad".format(life_stage).lower()) 
+            self.adata.write_h5ad(pp_out_path) 
 
         self.add_labels()
+
+        if subset_fraction:
+            print("Subsetting the data to {:.1f}%".format(subset_fraction*100))
+            subset_index = self.adata.obs.groupby("cell type", group_keys=False).apply(lambda x : self.sample_fraction(x, subset_fraction)).index
+            self.add_labels()
+            self.adata = self.adata[subset_index]
+            # Save it 
+            self.adata.write_h5ad(pp_out_path) 
+
         print("Dataclass is ready!")
         
     def add_cell_metadata(self, adata, src_file = "data/atacseq/Cell_metadata.tsv.gz"):
@@ -168,6 +197,9 @@ class AtacData():
                         sys.stdout.flush()
         else:
             print("File exists: %s (no need to download)" % src_file)
+
+    def sample_fraction(self, group, fraction):
+        return group.sample(frac=fraction)
 
 
 
