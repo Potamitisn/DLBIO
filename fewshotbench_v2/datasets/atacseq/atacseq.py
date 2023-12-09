@@ -10,7 +10,8 @@ from datasets.atacseq.utils import AtacData
 
 class AtSDataset(FewShotDataset, ABC):
     _dataset_name = 'atacseq'
-    _dataset_url = "http://catlas.org/catlas_downloads/humantissues/"
+    #_dataset_url = "http://catlas.org/catlas_downloads/humantissues/"
+    _dataset_url = "https://drive.google.com/uc?export=download&id=1MCCpTq1Xi6uQ-oHgVhOsPAZi9y5zdeZH"
 
     def load_atac_seq(self, mode='train', min_samples=20):
         adata = AtacData().adata
