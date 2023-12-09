@@ -19,6 +19,7 @@ class AtacData():
                 Promoter (-200 to +200 of TSS), Promoter Proximal (less) or Distal
             subset_fraction: float (0 - 1), fraction to subset the data. default: None
         """
+
         ##### Check input args #####
         # Check for valid life_stage
         if life_stage not in ["Adult", "Fetal"]:
@@ -48,9 +49,10 @@ class AtacData():
         # Append the file extension
         pp_out_path += "_matrix.h5ad"
         print("Processed data will be saved to {}".format(pp_out_path))
+
         #assert os.path.exists(pp_out_path)
 
-        ##### Check if processed data exits, or proces it #####
+        ##### Check if processed data exits, or process it #####
         if os.path.exists(pp_out_path) and pre_processing:
             print("Loading the pre-processed data from memory")
             self.adata = sc.read_h5ad(pp_out_path)
@@ -95,7 +97,6 @@ class AtacData():
             self.adata = self.adata[subset_index]
             # Save it 
             self.adata.write_h5ad(pp_out_path) 
-
         print("Dataclass is ready!")
         
     def add_cell_metadata(self, adata, src_file = "data/atacseq/Cell_metadata.tsv.gz"):
