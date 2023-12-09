@@ -10,7 +10,7 @@ n_query: ???
 mode: train
 
 exp:
-  name: ???
+  name: atacseq_exp_name
   save_freq: 10
   resume: false
   seed: 42
@@ -30,6 +30,6 @@ checkpoint:
 wandb:
   project: "DLBIO-Runs"
   entity: "epfl_wandb"
-  mode: "online" # Can set to offline, disabled
+  mode: "disabled" # Can set to offline, disabled
 
 iter_num: 600

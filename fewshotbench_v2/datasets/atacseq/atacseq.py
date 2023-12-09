@@ -13,16 +13,12 @@ class AtSDataset(FewShotDataset, ABC):
     #_dataset_url = "http://catlas.org/catlas_downloads/humantissues/"
     _dataset_url = "https://drive.google.com/uc?export=download&id=1MCCpTq1Xi6uQ-oHgVhOsPAZi9y5zdeZH"
 
-    def load_atac_seq(self, mode='train', min_samples=20):
-        dclass = AtacData()
+    def load_atac_seq(self, experiment_subset, tissue_split, mode='train', min_samples=20):
+        dclass = AtacData(experiment_subset)
         adata = dclass.adata
         
-        if dclass.life_stage == "Adult":
-            test_tissues = ["pancreas", "adrenal_gland", "thyroid", "islet", "ovary"]
-            val_tissues = ["heart_atrial_appendage","heart_la","heart_lv","heart_ra","heart_rv"]
-        elif dclass.life_stage == "Fetal":
-            test_tissues = ["cerebrum", "cerebellum", "standard"]
-            val_tissues = ["eye", "intestine", "thymus"]
+        test_tissues = tissue_split.test_tissues
+        val_tissues = tissue_split.val_tissues
         
         train_tissues = []
         for tissue_type in adata.obs["tissue"].unique():
@@ -47,10 +43,8 @@ class AtSDataset(FewShotDataset, ABC):
         adata = adata[filtered_index]
 
         # convert gene to torch tensor x
-        print("Convert gene to torch tensor")
         samples = adata.to_df().to_numpy(dtype=np.float32)
         # convert label to torch tensor y
-        print("Convert label to torch tensor")
         targets = adata.obs['label'].to_numpy(dtype=np.int32)
         
         print("====== Loading", mode, "data done :)")
@@ -83,14 +77,13 @@ class AtSSimpleDataset(AtSDataset):
 
 class AtSSetDataset(AtSDataset):
 
-    def __init__(self, n_way, n_support, n_query, n_episode=100, root='./data', mode='train'):
+    def __init__(self, n_way, n_support, n_query, experiment_subset, tissue_split, n_episode=100, root='./data', mode='train'):
         self.initialize_data_dir(root, download_flag=False)
-
         self.n_way = n_way
         self.n_episode = n_episode
         min_samples = n_support + n_query
 
-        samples_all, targets_all = self.load_atac_seq(mode, min_samples)
+        samples_all, targets_all = self.load_atac_seq(experiment_subset, tissue_split, mode, min_samples)
         self.categories = np.unique(targets_all)  # Unique cell labels
         self.x_dim = samples_all.shape[1]
 

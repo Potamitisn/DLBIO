@@ -10,6 +10,22 @@ dataset:
 
   set_cls:
     _target_: datasets.atacseq.atacseq.AtSSetDataset
+    experiment_subset: ${experiment_subset}
+    tissue_split: ${tissue_split.${experiment_subset.life_stage}} 
+
+experiment_subset:
+  life_stage: Adult     # ["Adult", "Fetal"]
+  pre_processing: True  # [True, False]
+  feature_class: null   # [None, "Promoter", "Promoter Proximal", "Distal"]
+  subset_fraction: null # [range(0,1)]
+
+tissue_split:
+  Adult:
+    test_tissues: ["pancreas", "adrenal_gland", "thyroid", "islet", "ovary"]
+    val_tissues: ["heart_atrial_appendage","heart_la","heart_lv","heart_ra","heart_rv"]
+  Fetal:
+    test_tissues: ["cerebrum", "cerebellum", "standard"]
+    val_tissues: ["eye", "intestine", "thymus"]
 
 backbone:
   _target_: backbones.fcnet.FCNet

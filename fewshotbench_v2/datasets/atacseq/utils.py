@@ -1,5 +1,5 @@
 # util function for human atac-seq data pre-processing 
-import os, requests, sys, gzip
+import os, requests, sys
 import scanpy as sc
 import pandas as pd
 import numpy as np
@@ -8,7 +8,7 @@ warnings.filterwarnings('ignore')
 
 
 class AtacData():
-    def __init__(self, src_file = "data/atacseq/matrix.h5ad", life_stage = "Adult", pre_processing=True, feature_class=None, subset_fraction=None) -> None:
+    def __init__(self, experiment_subset, src_file = "data/atacseq/matrix.h5ad", ) -> None:
 
         """
         Args:
@@ -19,6 +19,10 @@ class AtacData():
                 Promoter (-200 to +200 of TSS), Promoter Proximal (less) or Distal
             subset_fraction: float (0 - 1), fraction to subset the data. default: None
         """
+        life_stage = experiment_subset.life_stage
+        feature_class = experiment_subset.feature_class
+        subset_fraction = experiment_subset.subset_fraction
+        pre_processing = experiment_subset.pre_processing
 
         ##### Check input args #####
         # Check for valid life_stage
@@ -29,13 +33,8 @@ class AtacData():
         if feature_class not in valid_feature_classes:
             raise ValueError("Feature class must be None, 'Promoter', 'Promoter Proximal', or 'Distal'")
         # Check for valid subset_fraction
-        if subset_fraction is not None and not (0 <= subset_fraction <= 1):
+        if subset_fraction is not None and not (0 < subset_fraction <= 1):
             raise ValueError("Subset fraction must be a value between 0 and 1, or None")
-    
-        self.life_stage = life_stage
-        self.feature_class = feature_class
-        self.subset_fraction = subset_fraction
-
 
         ##### Data path #####
         # Initialize the base path
@@ -68,17 +67,17 @@ class AtacData():
 
             # Select Adult or Fetal cells 
             print("Selecting {} cells".format(life_stage))
-            if self.life_stage is not None:
-                self.adata = self.adata[self.adata.obs["Life stage"] == self.life_stage]
-                if self.life_stage == "Adult":
+            if life_stage is not None:
+                self.adata = self.adata[self.adata.obs["Life stage"] == life_stage]
+                if life_stage == "Adult":
                     self.adata = self.adata.to_memory()[:,self.adata.var["Present in adult tissues"] == "yes"]
-                elif self.life_stage == "Fetal":
+                elif life_stage == "Fetal":
                     self.adata = self.adata.to_memory()[:,self.adata.var["Present in fetal tissues"] == "yes"]
 
             # Select CRE (feature) class
-            if self.feature_class is not None:
+            if feature_class is not None:
                 print("Selecting feature class {}".format(feature_class))
-                self.adata = self.adata.to_memory()[:,self.adata.var["Class"] == self.feature_class]
+                self.adata = self.adata.to_memory()[:,self.adata.var["Class"] == feature_class]
         
             # Pre-processing 
             if pre_processing:
