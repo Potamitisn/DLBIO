@@ -52,9 +52,9 @@ class AtSDataset(FewShotDataset, ABC):
 
 
 class AtSSimpleDataset(AtSDataset):
-    def __init__(self, batch_size, root='./data/', mode='train', min_samples=20):
+    def __init__(self, batch_size, experiment_subset, tissue_split, root='./data/', mode='train', min_samples=20):
         self.initialize_data_dir(root, download_flag=False)
-        self.samples, self.targets = self.load_atac_seq(mode, min_samples)
+        self.samples, self.targets = self.load_atac_seq(experiment_subset, tissue_split, mode, min_samples)
         self.batch_size = batch_size
         super().__init__()
 
