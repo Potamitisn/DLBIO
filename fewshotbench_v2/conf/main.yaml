@@ -30,6 +30,6 @@ checkpoint:
 wandb:
   project: "DLBIO-Runs"
   entity: "epfl_wandb"
-  mode: "disabled" # Can set to offline, disabled
+  mode: "online" # Can set to offline, disabled
 
 iter_num: 600

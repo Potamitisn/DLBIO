@@ -7,6 +7,8 @@ dataset:
   name: atacseq
   simple_cls:
     _target_: datasets.atacseq.atacseq.AtSSimpleDataset
+    experiment_subset: ${experiment_subset}
+    tissue_split: ${tissue_split.${experiment_subset.life_stage}} 
 
   set_cls:
     _target_: datasets.atacseq.atacseq.AtSSetDataset
