@@ -1,7 +1,16 @@
-nWaySamples=(1 10 20 35 50)
 method=maml
+param=n_shot # [n_way, n_shot]
+nWaySamples=(1 10 20 35 50)
+nShotSamples=(1 10 20 50 100)
 
-for nWay in "${nWaySamples[@]}"
-do
-    python run.py experiment_subset.feature_class=Promoter exp.name="atacseq_adult_promoter_${method}_${nWay}way" method=${method} n_way=${nWay} 
-done
+if [ "$param" == "n_way" ]; then
+    for nWay in "${nWaySamples[@]}"
+    do
+        python run.py experiment_subset.feature_class=Promoter exp.name="atacseq_adult_promoter_${method}_${nWay}way" method=${method} n_way=${nWay} 
+    done
+else 
+    for nShot in "${nShotSamples[@]}"
+    do
+        python run.py experiment_subset.feature_class=Promoter exp.name="atacseq_adult_promoter_${method}_${nShot}shot" method=${method} n_shot=${nShot} 
+    done
+fi
