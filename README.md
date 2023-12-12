@@ -17,11 +17,11 @@ single nuclei were sequenced, identifying approximately
 classified in to promoter (-200 to 200 bp to transciption
 starting site), promoter proximal and distal.
 
-### Acquiring the dataset
-There are 2 options to acquire the necessary data:
-
 ### EDA
 🔴 Say a few words about our eda notebooks after we have their final versions.🔴 
+
+### Acquiring the dataset
+There are 2 options to acquire the necessary data:
 
 #### 1. Manually
 Download the following files (by clicking on the links) and move them to `DLBIO/fewshotbench_v2/data/atacseq/`.
