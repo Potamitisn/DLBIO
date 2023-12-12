@@ -1,13 +1,7 @@
 method=maml
-
-if [ "$method" == "maml" ]; then
-    lrSamples=(0.02 0.05 0.1)
-    for lr in "${lrSamples[@]}";do
-        python run.py experiment_subset.feature_class=Promoter exp.name="atacseq_adult_promoter_${method}_${lr}lr" method.maml_inner_lr=${lr} 
-    done
-else 
-    lrSamples=(0.002 0.005 0.01)
-    for lr in "${lrSamples[@]}"; do
-        python run.py experiment_subset.feature_class=Promoter exp.name="atacseq_adult_promoter_${method}_${lr}lr" lr=${lr} 
-    done
-fi
+dims=(32, 64, 128)
+for dim in "${dims[@]}";do
+    python run.py experiment_subset.feature_class=Promoter \
+    exp.name="atacseq_adult_promoter_${method}_dim_${dim}_${dim}" \
+    backbone.layer_dim=[${dim}, ${dim}] 
+done
