@@ -37,27 +37,14 @@ def get_accuracies(file_name):
                 print("FIX")
     return data_dict
 
-def main():
-    if len(sys.argv) != 3:
-        print("Usage: python plot_ablation.py <arg1> <arg2>")
-        print("arg1: True -> n_shot | False -> n_way")
-        print("arg2: method (eg. maml)")
-        return
 
-    # Extract and use the command-line arguments
-    n_shot_bool = bool(sys.argv[1])
-    method = sys.argv[2]
-
+def get_df(param, method):
     all_results = {}
-    if n_shot_bool:
-        param = "n_shot"
-        
-    else:
-        param = "n_way"
+
 
     samples = {}
-    samples["n_shot"] = [1, 5, 10, 20, 50, 100] # Nshots
-    samples["n_way"] = [1, 5, 10, 20, 35, 50]  # Nways
+    samples["n_shot"] = [1, 10, 20, 50, 100] # Nshots
+    samples["n_way"] = [1, 10, 20, 35, 50]  # Nways
 
     for sample in samples[param]:
         file_name = "fewshotbench_v2/checkpoints/atacseq_adult_promoter_{}_{}{}/results.txt".format(method, sample, param[2:])
@@ -65,11 +52,31 @@ def main():
         all_results[sample] = result
 
     df = pd.DataFrame(all_results).T
-    df["Train"].plot()
-    plt.xlabel(param)
-    plt.ylabel('Accuracy')
-    plt.title('Accuracy vs {}'.format(param))
-    plt.savefig("plots/atacseq_adult_promoter_{}_{}{}.png".format(method, sample, param[2:])) 
+    return df
+
+
+def main():
+    methods = ["matchingnet", "protonet"]
+
+    fig, axes = plt.subplots(1, 2, figsize=(8,4), sharey=True)
+    
+    for method in methods+["maml"]:
+        df = get_df("n_shot", method)
+        df["Test"].plot(ax=axes[1], label=method)
+
+    for method in methods:
+        df = get_df("n_way", method)
+        df["Test"].plot(ax=axes[0], label=method)
+    
+    axes[1].legend()
+    axes[0].legend()
+    axes[1].set_xlabel("Shot")
+    axes[0].set_xlabel("Way")
+    axes[0].set_ylabel("Test accuracy")
+    
+    fig.suptitle('Ablation study', fontsize=14)
+    plt.savefig("plots/waysVshots.png") 
+    
 
 if __name__ == "__main__":
     main()
