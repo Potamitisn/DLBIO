@@ -18,7 +18,8 @@ classified in to promoter (-200 to 200 bp to transciption
 starting site), promoter proximal and distal.
 
 ### EDA
-🔴 We recommand running the exploration notebook with >32G memory🔴
+🔴 We recommand running the [exploration notebook](https://github.com/Potamitisn/DLBIO/blob/main/data_exploration/exploration_h5ad.ipynb) with >32G memory🔴
+
 We explore the dataset in Anndata format by:
 - Adding the aligned metadata information.
 - Exploring the number of cells, tissues and candidate cis-regulartor elements in adult and fetal samples.
