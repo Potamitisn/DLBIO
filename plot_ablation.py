@@ -1,6 +1,11 @@
 import re, os
 import matplotlib.pyplot as plt
 
+"""
+This is a python script designed to plot the results of the ablation study produced by running the fewshotbench_v2/run.sh bash script.
+The results are stored in the fewshotbench_v2/checkpoints folder, in the form of a atacseq_adult_promoter_{method}_{nshot/nway}/results.txt file.
+"""
+
 def get_num_param(input_string):
     """
     Given a string of the form "Xword", where X is a number and word is a string,
@@ -57,6 +62,7 @@ def main():
     checkpoints_dir = "fewshotbench_v2/checkpoints"
     # Get all the experiments that we run
     experiments = [f for f in os.listdir(checkpoints_dir) if os.path.isdir(os.path.join(checkpoints_dir, f))]
+    experiments = [f for f in experiments if f.startswith("atacseq_adult_promoter_") and (f.endswith("shot") or f.endswith("way"))]
 
     # Get the results for each experiment
     for experiment in experiments:

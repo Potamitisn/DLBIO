@@ -1,3 +1,8 @@
+: '
+This is  a bash script to run a series of fewshotbench_v2 experiments on the adult ATAC-seq dataset with promoters only.
+You can choose the method (eg. baseline, protopnet, etc.), the parameter (n_way, n_shot) to study, and the values of the parameter to test.
+'
+
 method=baseline
 param=n_shot # [n_way, n_shot]
 nWaySamples=(1 35 50)
