@@ -18,7 +18,11 @@ classified in to promoter (-200 to 200 bp to transciption
 starting site), promoter proximal and distal.
 
 ### EDA
-🔴 Say a few words about our eda notebooks after we have their final versions.🔴 
+🔴 We recommand running the exploration notebook with >32G memory🔴
+We explore the dataset in Anndata format by:
+- Adding the aligned metadata information.
+- Exploring the number of cells, tissues and candidate cis-regulartor elements in adult and fetal samples.
+- Exploring the spilts of tissues and the resulting cell type distribution. 
 
 ### Acquiring the dataset
 There are 2 options to acquire the necessary data:
