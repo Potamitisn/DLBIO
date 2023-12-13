@@ -46,3 +46,9 @@ Our work has been fully integrated with the given "Few Shot Benchmark for Biomed
 ```
 python fewshotbench_v2/run.py exp.name=test_grou_8 method=maml dataset=atacseq
 ```
+
+### Exploring different data subsets and spilts
+We implemented several data subsets and splits options in the [atacseq.yaml](https://github.com/Potamitisn/DLBIO/blob/main/fewshotbench_v2/conf/dataset/atacseq.yaml) file. To test on your sub-dataset of interest:
+```
+python run.py experiment_subset.life_stage=Fetal experiment_subset.feature_class=Promoter experiment_subset.subset_fraction=0.1
+```
