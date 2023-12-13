@@ -74,13 +74,16 @@ def main():
     # Plot the results
     fig, axes = plt.subplots(1, 2, figsize=(8,4), sharey=True)
 
+    results["n_way"] = dict(sorted(results["n_way"].items()))
+    results["n_shot"] = dict(sorted(results["n_shot"].items()))
+
     # Sort the results by the number of shots/ways and plot Test accuracy + CI
     for method, exp_results in results["n_way"].items():
         exp_results.sort(key=lambda x: x[0])
         x, y, ci = zip(*exp_results)
         lower_ci = tuple(y[i]-ci[i] for i in range(len(y)))
         upper_ci = tuple(y[i]+ci[i] for i in range(len(y)))
-        axes[0].plot(x, y, label=method, linewidth=2, marker='o', markersize=5)
+        axes[0].plot(x, y, label=method, linewidth=1.5, marker=2, markersize=5)
         axes[0].fill_between(x, lower_ci, upper_ci, alpha=0.3)
     
     for method, exp_results in results["n_shot"].items():
@@ -88,7 +91,7 @@ def main():
         x, y, ci = zip(*exp_results)
         lower_ci = tuple(y[i]-ci[i] for i in range(len(y)))
         upper_ci = tuple(y[i]+ci[i] for i in range(len(y)))
-        axes[1].plot(x, y, label=method, linewidth=2, marker='o', markersize=5)
+        axes[1].plot(x, y, label=method, linewidth=1, marker=2, markersize=5)
         axes[1].fill_between(x, lower_ci, upper_ci, alpha=0.3)
 
     axes[1].legend()
@@ -98,7 +101,7 @@ def main():
     axes[0].set_ylabel("Test accuracy")
     
     fig.suptitle('Ablation study', fontsize=14)
-    plt.savefig("plots/waysVshots.png") 
+    plt.savefig("plots/ablation.png") 
     
 
 if __name__ == "__main__":
